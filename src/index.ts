@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { ENV } from "./environment";
-import { getSongById, getSongCount, insertSong } from "./song";
+import { getSongById, insertSong, updateSong } from "./song";
 
 const app = express();
 
@@ -45,16 +45,22 @@ app.get("/song/:id", async (req, res) => {
 });
 
 // Update
-app.get("/song/:id", async (req, res) => {
+app.put("/song/:id", async (req, res) => {
   const songId = req.params.id;
+  let { judul, penyanyi_id, audio_path } = req.body;
+
+  await updateSong({
+    song_id: +songId,
+    judul,
+    penyanyi_id,
+    audio_path,
+  });
 
   if (!songId) {
     res.status(400);
     res.end();
     return;
   }
-
-  res.json(await getSongById(+songId));
 
   res.end();
 });
