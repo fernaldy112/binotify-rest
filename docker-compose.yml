@@ -1,0 +1,22 @@
+version: '3.3'
+services:
+  rest:
+    build: .
+    ports:
+      - "8080:80"
+  db:
+    image: mysql:latest
+    environment:
+      - MYSQL_DATABASE=db
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=password
+      - MYSQL_ROOT_PASSWORD=password
+    volumes:
+      - "./scripts/db:/docker-entrypoint-initdb.d"
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 8081:80
+    environment:
+      - PMA_HOST=db
+      - PMA_PORT=3306
