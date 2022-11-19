@@ -2,6 +2,7 @@ version: '3.3'
 services:
   rest:
     build: .
+    command: npm run serve
     ports:
       - "8080:80"
   db:

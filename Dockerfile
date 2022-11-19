@@ -1,7 +1,7 @@
 FROM node:18
 
 WORKDIR /usr/src/binotify-rest
-COPY package*.json ./
+COPY . .
 RUN npm i
 
 EXPOSE 80
