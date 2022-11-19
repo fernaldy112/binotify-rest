@@ -1,7 +1,8 @@
 import express from "express";
 import cors from "cors";
 import { ENV } from "./environment";
-import { getSongById, insertSong, updateSong } from "./song";
+import { deleteSongById, getSongById, insertSong, updateSong } from "./song";
+import { allOf, anyOf, isValidId } from "./util";
 
 const app = express();
 
@@ -12,9 +13,9 @@ app.use(express.json());
 
 // Create
 app.post("/song", async (req, res) => {
-  const { judul, penyanyiId, audio_path: audioPath } = req.body;
+  const { judul, penyanyiId, audioPath } = req.body;
 
-  if (!judul || !penyanyiId || !audioPath) {
+  if (anyOf(!!judul, !!penyanyiId, !!audioPath).is(false)) {
     res.status(400);
     res.end();
     return;
@@ -33,14 +34,21 @@ app.post("/song", async (req, res) => {
 app.get("/song/:id", async (req, res) => {
   const songId = req.params.id;
 
-  if (!songId) {
+  if (!songId || !isValidId(songId)) {
     res.status(400);
     res.end();
     return;
   }
 
-  res.json(await getSongById(+songId));
+  const rawData = await getSongById(+songId);
 
+  if (rawData.length == 0) {
+    res.status(404);
+    res.end();
+    return;
+  }
+
+  res.json(rawData[0]);
   res.end();
 });
 
@@ -49,13 +57,11 @@ app.put("/song/:id", async (req, res) => {
   const songId = req.params.id;
   let { judul, penyanyiId, audioPath } = req.body;
 
-  if (!judul && !penyanyiId && !audioPath) {
-    res.status(400);
-    res.end();
-    return;
-  }
-
-  if (!songId) {
+  if (
+    allOf(!judul, !penyanyiId, !audioPath).is(true) ||
+    !songId ||
+    !isValidId(songId)
+  ) {
     res.status(400);
     res.end();
     return;
@@ -67,6 +73,21 @@ app.put("/song/:id", async (req, res) => {
     penyanyiId,
     audioPath,
   });
+
+  res.end();
+});
+
+// Delete
+app.delete("/song/:id", async (req, res) => {
+  const songId = req.params.id;
+
+  if (!songId || !isValidId(songId)) {
+    res.status(400);
+    res.end();
+    return;
+  }
+
+  await deleteSongById(+songId);
 
   res.end();
 });
