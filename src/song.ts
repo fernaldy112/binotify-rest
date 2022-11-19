@@ -19,13 +19,13 @@ async function updateSong(song: Song) {
   const { song_id, judul, penyanyi_id, audio_path } = song;
   let UPDATES = [];
   if (judul !== undefined) {
-    UPDATES.push(`judul = ${judul}`);
+    UPDATES.push(`judul = '${judul}'`);
   }
   if (penyanyi_id !== undefined) {
     UPDATES.push(`penyanyi_id = ${penyanyi_id}`);
   }
   if (audio_path !== undefined) {
-    UPDATES.push(`audio_path = ${audio_path}`);
+    UPDATES.push(`audio_path = '${audio_path}'`);
   }
 
   return query(
