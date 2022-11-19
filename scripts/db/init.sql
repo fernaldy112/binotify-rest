@@ -31,7 +31,7 @@ SET time_zone = "+00:00";
 -- Table structure for table `Song`
 --
 
-CREATE TABLE `Song` (`song_id` int NOT NULL,
+CREATE TABLE `song` (`song_id` int NOT NULL,
                                    `judul` char(64) NOT NULL,
                                                     `penyanyi_id` int NOT NULL,
                                                                       `audio_path` text NOT NULL) ENGINE=InnoDB DEFAULT
@@ -42,7 +42,7 @@ CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 -- Table structure for table `User`
 --
 
-CREATE TABLE `User` (`user_id` int NOT NULL,
+CREATE TABLE `user` (`user_id` int NOT NULL,
                                    `email` text NOT NULL,
                                                 `password` text NOT NULL,
                                                                 `username` text NOT NULL,
@@ -57,13 +57,13 @@ CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 -- Indexes for table `Song`
 --
 
-ALTER TABLE `Song` ADD PRIMARY KEY (`song_id`);
+ALTER TABLE `song` ADD PRIMARY KEY (`song_id`);
 
 --
 -- Indexes for table `User`
 --
 
-ALTER TABLE `User` ADD PRIMARY KEY (`user_id`);
+ALTER TABLE `user` ADD PRIMARY KEY (`user_id`);
 
 
 COMMIT;
