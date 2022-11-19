@@ -1,9 +1,9 @@
 export interface SongDetails {
   judul?: string;
-  penyanyi_id?: number;
-  audio_path?: string;
+  penyanyiId?: number;
+  audioPath?: string;
 }
 
 export interface Song extends SongDetails {
-  song_id: number;
+  songId: number;
 }

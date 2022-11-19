@@ -12,9 +12,9 @@ app.use(express.json());
 
 // Create
 app.post("/song", async (req, res) => {
-  const { judul, penyanyi_id, audio_path } = req.body;
+  const { judul, penyanyiId, audio_path: audioPath } = req.body;
 
-  if (!judul || !penyanyi_id || !audio_path) {
+  if (!judul || !penyanyiId || !audioPath) {
     res.status(400);
     res.end();
     return;
@@ -22,8 +22,8 @@ app.post("/song", async (req, res) => {
 
   await insertSong({
     judul,
-    penyanyi_id,
-    audio_path,
+    penyanyiId,
+    audioPath,
   });
 
   res.end();
@@ -47,20 +47,26 @@ app.get("/song/:id", async (req, res) => {
 // Update
 app.put("/song/:id", async (req, res) => {
   const songId = req.params.id;
-  let { judul, penyanyi_id, audio_path } = req.body;
+  let { judul, penyanyiId, audioPath } = req.body;
 
-  await updateSong({
-    song_id: +songId,
-    judul,
-    penyanyi_id,
-    audio_path,
-  });
+  if (!judul && !penyanyiId && !audioPath) {
+    res.status(400);
+    res.end();
+    return;
+  }
 
   if (!songId) {
     res.status(400);
     res.end();
     return;
   }
+
+  await updateSong({
+    songId: +songId,
+    judul,
+    penyanyiId,
+    audioPath,
+  });
 
   res.end();
 });
