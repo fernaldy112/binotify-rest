@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "serve": "ts-node src/index.ts"
+    "serve": "ts-node src/index.ts",
+    "rm": "docker compose down",
+    "deploy": "docker compose up --build"
   },
   "repository": {
     "type": "git",

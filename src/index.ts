@@ -2,7 +2,8 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { ENV } from "./environment";
-import { getSongById } from "./song";
+import { deleteSongById, getSongById, insertSong, updateSong } from "./song";
+import { allOf, anyOf, isValidId } from "./util";
 import { getUserByUsername, getUserByEmail, checkLoggedIn } from "./authentication";
 import jwt from "jsonwebtoken";
 import { Md5 } from "ts-md5";
@@ -10,16 +11,80 @@ import { Md5 } from "ts-md5";
 const app = express();
 
 app.use(cors());
+app.use(express.json());
+
+app.use(cookieParser());
+
+app.use(express.json());
 
 app.use(cookieParser());
 
 app.use(express.json());
 
 // TODO: add endpoints
+
+// Create
+app.post("/song", async (req, res) => {
+  const { judul, penyanyiId, audioPath } = req.body;
+
+  if (anyOf(!!judul, !!penyanyiId, !!audioPath).is(false)) {
+    res.status(400);
+    res.end();
+    return;
+  }
+
+  await insertSong({
+    judul,
+    penyanyiId,
+    audioPath,
+  });
+
+  res.end();
+});
+
+// Read
 app.get("/song/:id", async (req, res) => {
     const songId = req.params.id;
 
-    res.json(await getSongById(+songId));
+  if (!songId || !isValidId(songId)) {
+    res.status(400);
+    res.end();
+    return;
+  }
+
+  const rawData = await getSongById(+songId);
+
+  if (rawData.length == 0) {
+    res.status(404);
+    res.end();
+    return;
+  }
+
+  res.json(rawData[0]);
+  res.end();
+});
+
+// Update
+app.put("/song/:id", async (req, res) => {
+  const songId = req.params.id;
+  let { judul, penyanyiId, audioPath } = req.body;
+
+  if (
+    allOf(!judul, !penyanyiId, !audioPath).is(true) ||
+    !songId ||
+    !isValidId(songId)
+  ) {
+    res.status(400);
+    res.end();
+    return;
+  }
+
+  await updateSong({
+    songId: +songId,
+    judul,
+    penyanyiId,
+    audioPath,
+  });
 
     res.end();
 });
@@ -40,6 +105,7 @@ app.post("/login", async (req, res) => {
             
             let user = await getUserByEmail(credential);
             
+// Delete
             // check if email exists
             if (user){ // email exists
                 if (password === user[0 as keyof typeof user]["password"]){
@@ -101,8 +167,16 @@ app.get("/testLoggedIn", async(req, res) => {
     res.end();
 });
 
-app.get("/test", async (req, res) => {
-    res.write("Hello World!");
+app.delete("/song/:id", async (req, res) => {
+    const songId = req.params.id;
+
+  if (!songId || !isValidId(songId)) {
+    res.status(400);
+    res.end();
+    return;
+  }
+
+  await deleteSongById(+songId);
     
     res.end();
 });
