@@ -47,7 +47,7 @@ async function getUserByEmail(email: string) {
     });
   }
 
-const checkLoggedIn = (token: string) => {
+function checkLoggedIn(token: string) {
 
     let isLoggedIn = true;
     try {

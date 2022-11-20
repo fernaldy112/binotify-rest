@@ -15,12 +15,6 @@ app.use(express.json());
 
 app.use(cookieParser());
 
-app.use(express.json());
-
-app.use(cookieParser());
-
-app.use(express.json());
-
 // TODO: add endpoints
 
 // Create
@@ -89,7 +83,22 @@ app.put("/song/:id", async (req, res) => {
     res.end();
 });
 
-// docker run --rm --name hoppscotch -p 3000:3000 hoppscotch/hoppscotch:latest
+// Delete
+app.delete("/song/:id", async (req, res) => {
+    const songId = req.params.id;
+
+  if (!songId || !isValidId(songId)) {
+    res.status(400);
+    res.end();
+    return;
+  }
+
+  await deleteSongById(+songId);
+    
+    res.end();
+});
+
+// Login
 app.post("/login", async (req, res) => {
 
     const credential = req.body.cred;
@@ -105,7 +114,6 @@ app.post("/login", async (req, res) => {
             
             let user = await getUserByEmail(credential);
             
-// Delete
             // check if email exists
             if (user){ // email exists
                 if (password === user[0 as keyof typeof user]["password"]){
@@ -164,20 +172,6 @@ app.get("/testLoggedIn", async(req, res) => {
         });
     }
 
-    res.end();
-});
-
-app.delete("/song/:id", async (req, res) => {
-    const songId = req.params.id;
-
-  if (!songId || !isValidId(songId)) {
-    res.status(400);
-    res.end();
-    return;
-  }
-
-  await deleteSongById(+songId);
-    
     res.end();
 });
 
