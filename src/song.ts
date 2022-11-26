@@ -45,4 +45,23 @@ async function getSongCount() {
   });
 }
 
-export { getSongById, insertSong, updateSong, deleteSongById, getSongCount };
+async function getSongs(artistId?: number) {
+  let cond = "";
+
+  if (artistId) {
+    cond = ` WHERE penyanyi_id = ${artistId}`;
+  }
+
+  return query(`SELECT * FROM song${cond};`).then((rawData) => {
+    return rawData;
+  });
+}
+
+export {
+  getSongById,
+  insertSong,
+  updateSong,
+  deleteSongById,
+  getSongCount,
+  getSongs,
+};

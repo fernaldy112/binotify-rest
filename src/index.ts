@@ -2,7 +2,13 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { ENV } from "./environment";
-import { deleteSongById, getSongById, insertSong, updateSong } from "./song";
+import {
+  deleteSongById,
+  getSongById,
+  getSongs,
+  insertSong,
+  updateSong,
+} from "./song";
 import { allOf, anyOf, isValidId } from "./util";
 import {
   getUserByUsername,
@@ -63,6 +69,18 @@ app.get("/song/:id", async (req, res) => {
   }
 
   res.json(rawData[0]);
+  res.end();
+});
+
+app.get("/song", async (req, res) => {
+  const artistId = req.query.penyanyiId as string;
+
+  const rawData =
+    artistId && isValidId(artistId)
+      ? await getSongs(+artistId)
+      : await getSongs();
+
+  res.json(rawData);
   res.end();
 });
 
