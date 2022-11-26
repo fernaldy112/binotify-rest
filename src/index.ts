@@ -298,10 +298,19 @@ app.get("/testLoggedIn", async (req, res) => {
   res.end();
 });
 
-app.get("/subscriptions", async (_, res) => {
-  const subscriptions = (await getPendingSubscriptions()) || [];
+app.get("/subscriptions", async (req, res) => {
+  // let page = req.query.page;
+  const page =
+    req.query.page && isValidId(req.query.page as string) ? +req.query.page : 1;
+  const subscriptions = (await getPendingSubscriptions(page)) || [];
 
-  res.json(subscriptions);
+  const lastPage = subscriptions.length != 21;
+  const firstPage = page == 1;
+  if (subscriptions.length == 21) {
+    subscriptions.pop();
+  }
+
+  res.json({ firstPage, lastPage, subscriptions });
   res.end();
 });
 

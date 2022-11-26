@@ -13,12 +13,14 @@ interface Subscription {
   status: "PENDING" | UpdatedStatus;
 }
 
-async function getPendingSubscriptions() {
+async function getPendingSubscriptions(page: number) {
   const client = await SOAP_CLIENT;
 
   return new Promise<Subscription[]>((resolve, reject) => {
     client.SubscriptionServiceImplService.SubscriptionServiceImplPort.getPendingSubscription(
-      {},
+      {
+        arg0: page,
+      },
       (err: any, res: any) => {
         if (err) {
           reject(err);
