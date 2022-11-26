@@ -2,11 +2,15 @@ version: '3.3'
 services:
   rest:
     build: .
+    hostname: rest
     command: npm run serve
     ports:
-      - "8080:80"
+      - "8081:80"
+    networks:
+      - binotify
   db:
     image: mysql:latest
+    hostname: restdb
     command: --default-authentication-plugin=mysql_native_password
     environment:
       - MYSQL_DATABASE=db
@@ -15,10 +19,18 @@ services:
       - MYSQL_ROOT_PASSWORD=password
     volumes:
       - "./scripts/db:/docker-entrypoint-initdb.d"
+    networks:
+      - binotify
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     ports:
-      - 8081:80
+      - 9001:80
     environment:
       - PMA_HOST=db
       - PMA_PORT=3306
+    networks:
+      - binotify
+
+networks:
+  binotify:
+    external: true
