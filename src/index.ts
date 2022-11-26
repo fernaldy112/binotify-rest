@@ -19,7 +19,11 @@ import {
 import { getAllArtist } from "./artist";
 import jwt from "jsonwebtoken";
 import { Md5 } from "ts-md5";
-import { getPendingSubscription } from "./subscription";
+import {
+  getPendingSubscriptions,
+  handleUpdateSubscription,
+  updateSubscription,
+} from "./subscription";
 import * as soap from "soap";
 
 const app = express();
@@ -294,11 +298,19 @@ app.get("/testLoggedIn", async (req, res) => {
   res.end();
 });
 
-app.get("/subscriptions", async (req, res) => {
-  const subscriptions = (await getPendingSubscription()) || [];
+app.get("/subscriptions", async (_, res) => {
+  const subscriptions = (await getPendingSubscriptions()) || [];
 
   res.json(subscriptions);
   res.end();
+});
+
+app.post("/subscriptions/accept", async (req, res) => {
+  handleUpdateSubscription(req, res, "ACCEPTED");
+});
+
+app.post("/subscriptions/reject", async (req, res) => {
+  handleUpdateSubscription(req, res, "REJECTED");
 });
 
 app.listen(ENV.PORT);

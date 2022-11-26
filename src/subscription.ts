@@ -1,12 +1,16 @@
 import { ENV } from "./environment";
 import * as soap from "soap";
+import { Request, Response } from "express";
+import { anyOf, isValidId } from "./util";
 
 const SOAP_CLIENT = soap.createClientAsync(ENV.WSDL_URL + "", {});
+
+type UpdatedStatus = "ACCEPTED" | "REJECTED";
 
 interface Subscription {
   creatorId: number;
   subscriptionId: number;
-  status: "PENDING" | "ACCEPTED" | "REJECTED";
+  status: "PENDING" | UpdatedStatus;
 }
 
 async function getPendingSubscriptions() {
@@ -27,4 +31,66 @@ async function getPendingSubscriptions() {
   });
 }
 
-export { getPendingSubscriptions as getPendingSubscription };
+async function handleUpdateSubscription(
+  req: Request,
+  res: Response,
+  status: UpdatedStatus
+) {
+  const { creatorId, subscriberId } = req.body;
+
+  if (
+    anyOf(
+      !!creatorId,
+      !!subscriberId,
+      isValidId(creatorId),
+      isValidId(subscriberId)
+    ).is(false)
+  ) {
+    res.status(400);
+    res.end();
+    return;
+  }
+
+  updateSubscription(creatorId, subscriberId, status)
+    .then(() => {
+      res.status(200);
+      res.end();
+    })
+    .catch(() => {
+      res.status(500);
+      res.end();
+      return;
+    });
+}
+
+async function updateSubscription(
+  creatorId: number,
+  subscriberId: number,
+  status: UpdatedStatus
+) {
+  const client = await SOAP_CLIENT;
+
+  return new Promise<void>((resolve, reject) => {
+    const method = status == "ACCEPTED" ? "acceptRequest" : "rejectRequest";
+    client.SubscriptionServiceImplService.SubscriptionServiceImplPort[method](
+      {
+        arg0: creatorId,
+        arg1: subscriberId,
+      },
+      (err: any, _: any) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        resolve(void 0);
+      }
+    );
+  });
+}
+
+export {
+  getPendingSubscriptions,
+  updateSubscription,
+  handleUpdateSubscription,
+};
