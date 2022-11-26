@@ -1,51 +1,24 @@
-import { pool } from "./mysql";
+import { query } from "./mysql";
 import jwt from "jsonwebtoken";
 
 async function getUserByUsername(username: string) {
-  return new Promise((resolve, reject) => {
-    pool.getConnection((err, connection) => {
-      if (err) {
-        reject(err);
-      }
-
-      connection.query(
-        `SELECT * FROM user WHERE username = "${username}";`,
-        (err, result, fields) => {
-          connection.release();
-
-          if (err) {
-            reject(err);
-          }
-          
-          resolve(result);
-        }
-      );
-    });
-  });
+    return query(`SELECT * FROM user WHERE username = "${username}";`);
 }
 
 async function getUserByEmail(email: string) {
-    return new Promise((resolve, reject) => {
-      pool.getConnection((err, connection) => {
-        if (err) {
-          reject(err);
-        }
-  
-        connection.query(
-          `SELECT * FROM user WHERE email = '${email}';`,
-          (err, result, fields) => {
-            connection.release();
-  
-            if (err) {
-              reject(err);
-            }
-  
-            resolve(result);
-          }
-        );
-      });
-    });
-  }
+    return query(`SELECT * FROM user WHERE email = '${email}';`);
+}
+
+async function addUser(name: string, username: string, email: string, password: string) {
+    return query(`INSERT INTO user (email, password, username, name, isAdmin) VALUES (
+        '${email}',
+        '${password}',
+        '${username}',
+        '${name}',
+        0
+    );`);
+    
+}
 
 function checkLoggedIn(token: string) {
 
@@ -59,4 +32,4 @@ function checkLoggedIn(token: string) {
     return isLoggedIn;
 }
 
-export { getUserByUsername, getUserByEmail , checkLoggedIn};
+export { getUserByUsername, getUserByEmail , checkLoggedIn, addUser };

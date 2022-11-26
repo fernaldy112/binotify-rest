@@ -4,10 +4,11 @@ import cookieParser from "cookie-parser";
 import { ENV } from "./environment";
 import { deleteSongById, getSongById, insertSong, updateSong } from "./song";
 import { allOf, anyOf, isValidId } from "./util";
-import { getUserByUsername, getUserByEmail, checkLoggedIn } from "./authentication";
+import { getUserByUsername, getUserByEmail, checkLoggedIn, addUser } from "./authentication";
 import { getAllArtist } from "./artist";
 import jwt from "jsonwebtoken";
 import { Md5 } from "ts-md5";
+import { register } from "ts-node";
 
 const app = express();
 
@@ -117,18 +118,21 @@ app.post("/login", async (req, res) => {
   const credential = req.body.cred;
   const password = Md5.hashStr(req.body.pass);
   let validCode: number = 0;
+  // 1: login with email
+  // 2: login with username
 
+  res.clearCookie("token");
   try {
 
-    let user = await getUserByUsername(credential);
+    let user: any[] = await getUserByUsername(credential);
 
     // check if username exists
-    if (!user) { // username doesn't exist
+    if (user.length === 0) { // username doesn't exist
 
-      let user = await getUserByEmail(credential);
+      let user: any[] = await getUserByEmail(credential);
 
       // check if email exists
-      if (user) { // email exists
+      if (user.length !== 0) { // email exists
         if (password === user[0 as keyof typeof user]["password"]) {
           validCode = 1; // email
         }
@@ -139,19 +143,26 @@ app.post("/login", async (req, res) => {
         validCode = 2; //username
       }
     }
-
+    
     // if valid
     if (validCode !== 0) {
       // jwt
-      if (user) {
+      if (validCode === 1){
+        user= await getUserByEmail(credential);
+      } else {
+        user= await getUserByUsername(credential);
+      }
+      if (user.length !== 0) {
         let userJson = {
           user_id: user[0 as keyof typeof user]["user_id"],
           password: user[0 as keyof typeof user]["password"]
         }
+        
         const token = jwt.sign(userJson, "binotify");
         res.cookie("token", token, {httpOnly: true});
         res.status(200).json({
-          valid: true
+          valid: true,
+          note: "Login successfully"
         });
       }
     } else {
@@ -162,7 +173,8 @@ app.post("/login", async (req, res) => {
     }
 
   } catch (err) {
-    res.status(500).json({
+    res.status(200).json({
+      valid: false,
       note: "Something wrong with the server"
     });
   }
@@ -170,6 +182,86 @@ app.post("/login", async (req, res) => {
   res.end();
 
 });
+
+// Register
+app.post("/register", async (req, res) => {
+
+    const name = req.body.name;
+    const username = req.body.username;
+    const email = req.body.email;
+    const password = Md5.hashStr(req.body.pass);
+    const password2 = Md5.hashStr(req.body.pass2);
+    let registerErrorCode: number = 0;
+    // 1: username already exist
+    // 2: email already exist
+    // 3: passwords don't match
+    res.clearCookie("token");
+    try {
+  
+      let user: any[] = await getUserByUsername(username);
+      
+      // check if username exists
+      if (user.length === 0) { // username doesn't exist
+  
+        let user: any[] = await getUserByEmail(email);
+  
+        // check if email exists
+        if (user.length !== 0) { // email exists
+            registerErrorCode = 2; // email
+        } 
+  
+      } else {
+        registerErrorCode = 1;
+      }
+
+      if (registerErrorCode === 0 && password !== password2){
+        registerErrorCode = 3;
+      }
+      
+      // if valid
+      if (registerErrorCode === 0) {
+        await addUser(name, username, email, password);
+        let user: any[] = await getUserByUsername(username);
+        // jwt
+        if (user.length !== 0) {
+          let userJson = {
+            user_id: user[0 as keyof typeof user]["user_id"],
+            password: user[0 as keyof typeof user]["password"]
+          }
+          const token = jwt.sign(userJson, "binotify");
+          res.cookie("token", token, {httpOnly: true});
+          res.status(200).json({
+            valid: true,
+            note: "Register successfully"
+          });
+        }
+      } else if (registerErrorCode === 1){
+        res.status(200).json({
+          valid: false,
+          note: "Username already exists"
+        });
+      } else if (registerErrorCode === 2){
+        res.status(200).json({
+          valid: false,
+          note: "Email already exists"
+        });
+      } else if (registerErrorCode === 3){
+        res.status(200).json({
+          valid: false,
+          note: "Confirm password doesn't match"
+        });
+      }
+  
+    } catch (err) {
+      res.status(200).json({
+        valid: false,
+        note: "Something wrong with the server"
+      });
+    }
+  
+    res.end();
+  
+  });
 
 app.get("/testLoggedIn", async (req, res) => {
   let isLoggedIn = checkLoggedIn(req.cookies.token);
