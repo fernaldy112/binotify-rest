@@ -149,7 +149,7 @@ app.post("/login", async (req, res) => {
           password: user[0 as keyof typeof user]["password"]
         }
         const token = jwt.sign(userJson, "binotify");
-        res.cookie("token", token);
+        res.cookie("token", token, {httpOnly: true});
         res.status(200).json({
           valid: true
         });
