@@ -10,20 +10,6 @@ interface Subscription {
 }
 
 async function getPendingSubscriptions() {
-  // return SOAP_CLIENT.then(async (client) => {
-  //   console.log(client.describe());
-  //   client.SubscriptionServiceImplService.SubscriptionServiceImplPort.getPendingSubscription(
-  //     {},
-  //     (err: any, res: any) => {
-  //       console.log(err);
-  //       console.log(res);
-  //       if (err) {
-  //         // reject(err);
-  //         return;
-  //       }
-  //       // resolve(res.return);
-  //     }
-  //   );
   const client = await SOAP_CLIENT;
 
   return new Promise<Subscription[]>((resolve, reject) => {
@@ -40,17 +26,5 @@ async function getPendingSubscriptions() {
     );
   });
 }
-
-// (async () => {
-//   soap.createClientAsync(ENV.WSDL_URL + "").then(async (client) => {
-//     console.log(client.describe());
-//     client.SubscriptionServiceImplService.SubscriptionServiceImplPort.getPendingSubscription(
-//       {},
-//       (err: any, res: any) => {
-//         console.log(res);
-//       }
-//     );
-//   });
-// })();
 
 export { getPendingSubscriptions as getPendingSubscription };
