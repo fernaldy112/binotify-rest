@@ -186,6 +186,7 @@ app.post("/login", async (req, res) => {
         res.status(200).json({
           valid: true,
           note: "Login successfully",
+          isAdmin: user[0]["is_admin"],
         });
       }
     } else {
@@ -253,6 +254,7 @@ app.post("/register", async (req, res) => {
         res.status(200).json({
           valid: true,
           note: "Register successfully",
+          isAdmin: user[0]["is_admin"],
         });
       }
     } else if (registerErrorCode === 1) {
