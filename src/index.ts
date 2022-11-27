@@ -17,7 +17,7 @@ import {
   addUser,
 } from "./authentication";
 import { getAllArtist } from "./artist";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { Md5 } from "ts-md5";
 import {
   getPendingSubscriptions,
@@ -33,6 +33,53 @@ app.use(cors());
 app.use(express.json());
 
 app.use(cookieParser());
+
+interface UserInfo {
+  [key: string]: string;
+}
+
+// middleware to check routes
+app.use((req, res, next) => {
+
+    const PUBLIC_URLS = [/^\/login$/, /^\/register$/,];
+    const USER_URLS = [/^\/song(\/\d+)?$/, /^\/songList\/\d+\/\d+$/];
+    const ADMIN_URLS = [...USER_URLS, /^\/artistList$/, /^\/subscriptions((\/accept)|(\/reject))?$/];
+
+    if (PUBLIC_URLS[0].test(req.path) || PUBLIC_URLS[1].test(req.path)){
+        next();
+    } else {
+        try{
+            let token = req.headers.authorization!.split(" ")[1];
+            const userJson: UserInfo = jwt.verify(token, "binotify") as JwtPayload;
+            
+            let valid = false;
+            if (userJson.isAdmin){
+                for(let regexp of ADMIN_URLS){
+                    valid = regexp.test(req.path);
+                    if (valid){
+                        break;
+                    }
+                }
+            } else {
+                for(let regexp of USER_URLS){
+                    valid = regexp.test(req.path);
+                    if (valid){
+                        break;
+                    }
+                }
+            }
+            if (valid){
+                next();
+            } else {
+                res.status(404);
+                res.end();
+            }
+        } catch (err){
+            res.status(400);
+            res.end();
+        }
+    }
+});
 
 // TODO: add endpoints
 
@@ -148,16 +195,15 @@ app.get("/songList/:user/:penyanyi", async (req, res) => {
     return;
   }
 
-  let status = await getSubscriptionStatus(singerID, userID);
+  let status = await getSubscriptionStatus(+singerID, +userID);
   if (status === "ACCEPTED") {
-    let rawData = await getSongs(singerID);
+    let rawData = await getSongs(+singerID);
+    res.json(rawData[0]);
   } else {
     res.status(200).json({
       note: "subscription have not been accepted",
     });
   }
-
-  res.json(rawData[0]);
   res.end();
 });
 
@@ -169,7 +215,6 @@ app.post("/login", async (req, res) => {
   // 1: login with email
   // 2: login with username
 
-  res.clearCookie("token");
   try {
     let user: any[] = await getUserByUsername(credential);
 
@@ -202,29 +247,23 @@ app.post("/login", async (req, res) => {
       }
       if (user.length !== 0) {
         let userJson = {
-          user_id: user[0 as keyof typeof user]["user_id"],
-          password: user[0 as keyof typeof user]["password"],
+          user_id: user[0]["user_id"],
+          username: user[0]["username"],
+          isAdmin: user[0]["isAdmin"],
         };
 
         const token = jwt.sign(userJson, "binotify");
-        res.cookie("token", token, { httpOnly: true });
+        // res.cookie("token", token, { httpOnly: true });
         res.status(200).json({
-          valid: true,
-          note: "Login successfully",
           isAdmin: user[0]["isAdmin"],
+          token: token,
         });
       }
     } else {
-      res.status(200).json({
-        valid: false,
-        note: "Credential not valid",
-      });
+      res.status(401);
     }
   } catch (err) {
-    res.status(200).json({
-      valid: false,
-      note: "Something wrong with the server",
-    });
+    res.status(500);
   }
 
   res.end();
@@ -241,7 +280,6 @@ app.post("/register", async (req, res) => {
   // 1: username already exist
   // 2: email already exist
   // 3: passwords don't match
-  res.clearCookie("token");
   try {
     let user: any[] = await getUserByUsername(username);
 
@@ -271,38 +309,32 @@ app.post("/register", async (req, res) => {
       // jwt
       if (user.length !== 0) {
         let userJson = {
-          user_id: user[0]["user_id"],
-          password: user[0]["password"],
+            user_id: user[0]["user_id"],
+            username: user[0]["username"],
+            isAdmin: user[0]["isAdmin"],
         };
         const token = jwt.sign(userJson, "binotify");
-        res.cookie("token", token, { httpOnly: true });
+        // res.cookie("token", token, { httpOnly: true });
         res.status(200).json({
-          valid: true,
-          note: "Register successfully",
-          isAdmin: user[0]["isAdmin"],
+            isAdmin: user[0]["isAdmin"],
+            token: token,
         });
       }
     } else if (registerErrorCode === 1) {
-      res.status(200).json({
-        valid: false,
+      res.status(401).json({
         note: "Username already exists",
       });
     } else if (registerErrorCode === 2) {
-      res.status(200).json({
-        valid: false,
+      res.status(401).json({
         note: "Email already exists",
       });
     } else if (registerErrorCode === 3) {
-      res.status(200).json({
-        valid: false,
+      res.status(401).json({
         note: "Confirm password doesn't match",
       });
     }
   } catch (err) {
-    res.status(200).json({
-      valid: false,
-      note: "Something wrong with the server",
-    });
+    res.status(500);
   }
 
   res.end();
