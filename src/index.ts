@@ -23,6 +23,7 @@ import {
   getPendingSubscriptions,
   handleUpdateSubscription,
   updateSubscription,
+  getSubscriptionStatus,
 } from "./subscription";
 import * as soap from "soap";
 
@@ -131,6 +132,30 @@ app.delete("/song/:id", async (req, res) => {
 // list penyanyi
 app.get("/artistList", async (req, res) => {
   let rawData = await getAllArtist();
+
+  res.json(rawData[0]);
+  res.end();
+});
+
+//list lagu
+app.get("/songList/:user/:penyanyi", async (req, res) => {
+  const userID = req.params.user;
+  const singerID = req.params.penyanyi;
+
+  if (!userID || !isValidId(userID) || !singerID || !isValidId(singerID)) {
+    res.status(400);
+    res.end();
+    return;
+  }
+
+  let status = await getSubscriptionStatus(singerID, userID);
+  if (status === "ACCEPTED") {
+    let rawData = await getSongs(singerID);
+  } else {
+    res.status(200).json({
+      note: "subscription have not been accepted",
+    });
+  }
 
   res.json(rawData[0]);
   res.end();
@@ -321,5 +346,6 @@ app.post("/subscriptions/accept", async (req, res) => {
 app.post("/subscriptions/reject", async (req, res) => {
   handleUpdateSubscription(req, res, "REJECTED");
 });
+
 
 app.listen(ENV.PORT);

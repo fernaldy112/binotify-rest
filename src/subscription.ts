@@ -91,8 +91,18 @@ async function updateSubscription(
   });
 }
 
+async function getSubscriptionStatus(
+  creatorId: number,
+  subscriberId: number,
+) {
+  const client = await SOAP_CLIENT;
+  let status = client.SubscriptionServiceImplService.SubscriptionServiceImplPort.getStatus(creatorId, subscriberId);
+  return status;
+}
+
 export {
   getPendingSubscriptions,
   updateSubscription,
   handleUpdateSubscription,
+  getSubscriptionStatus,
 };
