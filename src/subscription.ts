@@ -3,7 +3,13 @@ import * as soap from "soap";
 import { Request, Response } from "express";
 import { anyOf, isValidId } from "./util";
 
-const SOAP_CLIENT = soap.createClientAsync(ENV.WSDL_URL + "", {});
+const SOAP_CLIENT = (async () => {
+  const client = await soap.createClientAsync(ENV.WSDL_URL + "", {});
+  client.addSoapHeader({
+    "tns:ApiKey": ENV.API_KEY,
+  });
+  return client;
+})();
 
 type UpdatedStatus = "ACCEPTED" | "REJECTED";
 
@@ -91,12 +97,13 @@ async function updateSubscription(
   });
 }
 
-async function getSubscriptionStatus(
-  creatorId: number,
-  subscriberId: number,
-) {
+async function getSubscriptionStatus(creatorId: number, subscriberId: number) {
   const client = await SOAP_CLIENT;
-  let status = client.SubscriptionServiceImplService.SubscriptionServiceImplPort.getStatus(creatorId, subscriberId);
+  let status =
+    client.SubscriptionServiceImplService.SubscriptionServiceImplPort.getStatus(
+      creatorId,
+      subscriberId
+    );
   return status;
 }
 
