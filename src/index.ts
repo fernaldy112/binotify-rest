@@ -40,45 +40,51 @@ interface UserInfo {
 
 // middleware to check routes
 app.use((req, res, next) => {
+  const PUBLIC_URLS = [/^\/login$/, /^\/register$/, /^\/artistList$/];
+  const USER_URLS = [/^\/song(\/\d+)?$/, /^\/songList\/\d+\/\d+$/];
+  const ADMIN_URLS = [
+    ...USER_URLS,
+    /^\/subscriptions((\/accept)|(\/reject))?$/,
+  ]; ///^\/artistList$/,
 
-    const PUBLIC_URLS = [/^\/login$/, /^\/register$/, /^\/artistList$/,];
-    const USER_URLS = [/^\/song(\/\d+)?$/, /^\/songList\/\d+\/\d+$/];
-    const ADMIN_URLS = [...USER_URLS, /^\/subscriptions((\/accept)|(\/reject))?$/]; ///^\/artistList$/,
+  if (
+    PUBLIC_URLS[0].test(req.path) ||
+    PUBLIC_URLS[1].test(req.path) ||
+    PUBLIC_URLS[2].test(req.path)
+  ) {
+    next();
+  } else {
+    try {
+      let token = req.headers.authorization!.split(" ")[1];
+      const userJson: UserInfo = jwt.verify(token, "binotify") as JwtPayload;
 
-    if (PUBLIC_URLS[0].test(req.path) || PUBLIC_URLS[1].test(req.path) || PUBLIC_URLS[2].test(req.path)){
-        next();
-    } else {
-        try{
-            let token = req.headers.authorization!.split(" ")[1];
-            const userJson: UserInfo = jwt.verify(token, "binotify") as JwtPayload;
-            
-            let valid = false;
-            if (userJson.isAdmin){
-                for(let regexp of ADMIN_URLS){
-                    valid = regexp.test(req.path);
-                    if (valid){
-                        break;
-                    }
-                }
-            } else {
-                for(let regexp of USER_URLS){
-                    valid = regexp.test(req.path);
-                    if (valid){
-                        break;
-                    }
-                }
-            }
-            if (valid){
-                next();
-            } else {
-                res.status(404);
-                res.end();
-            }
-        } catch (err){
-            res.status(400);
-            res.end();
+      let valid = false;
+      if (userJson.isAdmin) {
+        for (let regexp of ADMIN_URLS) {
+          valid = regexp.test(req.path);
+          if (valid) {
+            break;
+          }
         }
+      } else {
+        for (let regexp of USER_URLS) {
+          valid = regexp.test(req.path);
+          if (valid) {
+            break;
+          }
+        }
+      }
+      if (valid) {
+        next();
+      } else {
+        res.status(404);
+        res.end();
+      }
+    } catch (err) {
+      res.status(400);
+      res.end();
     }
+  }
 });
 
 // TODO: add endpoints
@@ -125,12 +131,11 @@ app.get("/song/:id", async (req, res) => {
 });
 
 app.get("/song", async (req, res) => {
-  const artistId = req.query.penyanyiId as string;
+  const token = req.headers.authorization!.split(" ")[1];
+  const user: UserInfo = jwt.verify(token, "binotify") as JwtPayload;
+  const artistId = user.user_id;
 
-  const rawData =
-    artistId && isValidId(artistId)
-      ? await getSongs(+artistId)
-      : await getSongs();
+  const rawData = !user.isAdmin ? await getSongs(+artistId) : await getSongs();
 
   res.json(rawData);
   res.end();
@@ -309,15 +314,15 @@ app.post("/register", async (req, res) => {
       // jwt
       if (user.length !== 0) {
         let userJson = {
-            user_id: user[0]["user_id"],
-            username: user[0]["username"],
-            isAdmin: user[0]["isAdmin"],
+          user_id: user[0]["user_id"],
+          username: user[0]["username"],
+          isAdmin: user[0]["isAdmin"],
         };
         const token = jwt.sign(userJson, "binotify");
         // res.cookie("token", token, { httpOnly: true });
         res.status(200).json({
-            isAdmin: user[0]["isAdmin"],
-            token: token,
+          isAdmin: user[0]["isAdmin"],
+          token: token,
         });
       }
     } else if (registerErrorCode === 1) {
@@ -380,6 +385,5 @@ app.post("/subscriptions/accept", async (req, res) => {
 app.post("/subscriptions/reject", async (req, res) => {
   handleUpdateSubscription(req, res, "REJECTED");
 });
-
 
 app.listen(ENV.PORT);
