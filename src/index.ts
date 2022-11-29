@@ -9,7 +9,7 @@ import {
   insertSong,
   updateSong,
 } from "./song";
-import { allOf, anyOf, isValidId } from "./util";
+import { allOf, anyOf, getClientUserId, isValidId, UserInfo } from "./util";
 import {
   getUserByUsername,
   getUserByEmail,
@@ -22,21 +22,18 @@ import { Md5 } from "ts-md5";
 import {
   getPendingSubscriptions,
   handleUpdateSubscription,
-  updateSubscription,
   getSubscriptionStatus,
 } from "./subscription";
-import * as soap from "soap";
+import fileUpload, { UploadedFile } from "express-fileupload";
+import fs from "fs";
+import path from "path";
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
-
 app.use(cookieParser());
-
-interface UserInfo {
-  [key: string]: string;
-}
+app.use(fileUpload());
 
 // middleware to check routes
 app.use((req, res, next) => {
@@ -87,21 +84,26 @@ app.use((req, res, next) => {
   }
 });
 
-// TODO: add endpoints
-
 // Create
 app.post("/song", async (req, res) => {
-  const { judul, penyanyiId, audioPath } = req.body;
+  const { judul } = req.body;
+  const file = req.files!.audioFile as UploadedFile;
+  const artistId = getClientUserId(req);
 
-  if (anyOf(!!judul, !!penyanyiId, !!audioPath).is(false)) {
+  if (anyOf(!!judul, !!artistId, !!file).is(false)) {
     res.status(400);
     res.end();
     return;
   }
 
+  const filePath = path.parse(file.name);
+
+  const audioPath = `${filePath.name}-${Date.now()}${filePath.ext}`;
+  await file.mv(`./assets/${audioPath}`);
+
   await insertSong({
     judul,
-    penyanyiId,
+    penyanyiId: artistId,
     audioPath,
   });
 
@@ -385,5 +387,9 @@ app.post("/subscriptions/accept", async (req, res) => {
 app.post("/subscriptions/reject", async (req, res) => {
   handleUpdateSubscription(req, res, "REJECTED");
 });
+
+if (!fs.existsSync("./assets")) {
+  fs.mkdirSync("./assets");
+}
 
 app.listen(ENV.PORT);

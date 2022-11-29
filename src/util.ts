@@ -1,3 +1,10 @@
+import { Request } from "express";
+import jwt, { JwtPayload } from "jsonwebtoken";
+
+interface UserInfo {
+  [key: string]: string;
+}
+
 function isValidId(id: string): boolean {
   return /^\d+$/.test(id) && +id != 0;
 }
@@ -28,4 +35,11 @@ class AnyOf {
   }
 }
 
-export { isValidId, anyOf, allOf };
+function getClientUserId(req: Request) {
+  const token = req.headers.authorization!.split(" ")[1];
+  const userInfo: UserInfo = jwt.verify(token, "binotify") as JwtPayload;
+
+  return +userInfo.user_id;
+}
+
+export { isValidId, anyOf, allOf, UserInfo, getClientUserId };

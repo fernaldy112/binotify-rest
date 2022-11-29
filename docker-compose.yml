@@ -6,6 +6,8 @@ services:
     command: npm run serve
     ports:
       - "8081:80"
+    volumes:
+      - "./:/usr/src/binotify-rest"
     networks:
       - binotify
   db:
@@ -24,7 +26,7 @@ services:
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     ports:
-      - 9011:80
+      - 9001:80
     environment:
       - PMA_HOST=db
       - PMA_PORT=3306
