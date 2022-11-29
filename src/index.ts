@@ -41,11 +41,11 @@ interface UserInfo {
 // middleware to check routes
 app.use((req, res, next) => {
 
-    const PUBLIC_URLS = [/^\/login$/, /^\/register$/,];
+    const PUBLIC_URLS = [/^\/login$/, /^\/register$/, /^\/artistList$/,];
     const USER_URLS = [/^\/song(\/\d+)?$/, /^\/songList\/\d+\/\d+$/];
-    const ADMIN_URLS = [...USER_URLS, /^\/artistList$/, /^\/subscriptions((\/accept)|(\/reject))?$/];
+    const ADMIN_URLS = [...USER_URLS, /^\/subscriptions((\/accept)|(\/reject))?$/]; ///^\/artistList$/,
 
-    if (PUBLIC_URLS[0].test(req.path) || PUBLIC_URLS[1].test(req.path)){
+    if (PUBLIC_URLS[0].test(req.path) || PUBLIC_URLS[1].test(req.path) || PUBLIC_URLS[2].test(req.path)){
         next();
     } else {
         try{
@@ -180,7 +180,7 @@ app.delete("/song/:id", async (req, res) => {
 app.get("/artistList", async (req, res) => {
   let rawData = await getAllArtist();
 
-  res.json(rawData[0]);
+  res.json(rawData);
   res.end();
 });
 
