@@ -146,10 +146,12 @@ app.get("/song", async (req, res) => {
 // Update
 app.put("/song/:id", async (req, res) => {
   const songId = req.params.id;
-  let { judul, penyanyiId, audioPath } = req.body;
+  const { judul } = req.body;
+  const file = req.files!.audioFile as UploadedFile;
+  const artistId = getClientUserId(req);
 
   if (
-    allOf(!judul, !penyanyiId, !audioPath).is(true) ||
+    allOf(!judul, !artistId, !file).is(true) ||
     !songId ||
     !isValidId(songId)
   ) {
@@ -158,10 +160,14 @@ app.put("/song/:id", async (req, res) => {
     return;
   }
 
+  const filePath = path.parse(file.name);
+  const audioPath = `${filePath.name}-${Date.now()}${filePath.ext}`;
+  await file.mv(`./assets/${audioPath}`);
+
   await updateSong({
     songId: +songId,
     judul,
-    penyanyiId,
+    penyanyiId: artistId,
     audioPath,
   });
 
