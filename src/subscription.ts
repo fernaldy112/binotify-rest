@@ -99,12 +99,23 @@ async function updateSubscription(
 
 async function getSubscriptionStatus(creatorId: number, subscriberId: number) {
   const client = await SOAP_CLIENT;
-  let status =
+
+  return new Promise<string>((resolve, reject) => {
     client.SubscriptionServiceImplService.SubscriptionServiceImplPort.getStatus(
-      creatorId,
-      subscriberId
+      {
+        arg0: creatorId,
+        arg1: subscriberId,
+      },
+      (err: any, res: { return: string }) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        resolve(res.return);
+      }
     );
-  return status;
+  });
 }
 
 export {
