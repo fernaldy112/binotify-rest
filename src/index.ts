@@ -33,22 +33,31 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
+app.use("/assets", express.static(path.join(__dirname, "..", "assets")));
 app.use(fileUpload());
 
 // middleware to check routes
 app.use((req, res, next) => {
-  const PUBLIC_URLS = [/^\/login$/, /^\/register$/, /^\/artistList$/];
-  const USER_URLS = [/^\/song(\/\d+)?$/, /^\/songList\/\d+\/\d+$/];
+  const PUBLIC_URLS = [
+    /^\/login$/,
+    /^\/register$/,
+    /^\/artistList$/,
+    /^\/songList\/\d+\/\d+$/,
+    /^\/assets\/.*$/,
+  ];
+  const USER_URLS = [/^\/song(\/\d+)?$/];
   const ADMIN_URLS = [
     ...USER_URLS,
     /^\/subscriptions((\/accept)|(\/reject))?$/,
   ]; ///^\/artistList$/,
 
-  if (
-    PUBLIC_URLS[0].test(req.path) ||
-    PUBLIC_URLS[1].test(req.path) ||
-    PUBLIC_URLS[2].test(req.path)
-  ) {
+  const isPublicUrl = PUBLIC_URLS.reduce(
+    (yes, pattern) => yes || pattern.test(req.path),
+    false
+  );
+
+  if (isPublicUrl) {
+    console.log("This url is accessible by anyone");
     next();
   } else {
     try {
@@ -209,9 +218,10 @@ app.get("/songList/:user/:penyanyi", async (req, res) => {
   }
 
   let status = await getSubscriptionStatus(+singerID, +userID);
+  console.log(`Status: ${status}`);
   if (status === "ACCEPTED") {
     let rawData = await getSongs(+singerID);
-    res.json(rawData[0]);
+    res.json(rawData);
   } else {
     res.status(200).json({
       note: "subscription have not been accepted",
