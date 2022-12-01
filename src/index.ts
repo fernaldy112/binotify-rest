@@ -27,6 +27,7 @@ import {
 import fileUpload, { UploadedFile } from "express-fileupload";
 import fs from "fs";
 import path from "path";
+import { Song } from "./model/song";
 
 const app = express();
 
@@ -156,7 +157,7 @@ app.get("/song", async (req, res) => {
 app.put("/song/:id", async (req, res) => {
   const songId = req.params.id;
   const { judul } = req.body;
-  const file = req.files!.audioFile as UploadedFile;
+  const file = req.files ? req.files.audioFile as UploadedFile : undefined;
   const artistId = getClientUserId(req);
 
   if (
@@ -169,9 +170,14 @@ app.put("/song/:id", async (req, res) => {
     return;
   }
 
-  const filePath = path.parse(file.name);
-  const audioPath = `${filePath.name}-${Date.now()}${filePath.ext}`;
-  await file.mv(`./assets/${audioPath}`);
+  let audioPath = undefined;
+
+  if (file) {
+    const filePath = path.parse(file.name);
+    audioPath = `${filePath.name}-${Date.now()}${filePath.ext}`;
+    await file.mv(`./assets/${audioPath}`);
+  }
+
 
   await updateSong({
     songId: +songId,
@@ -194,7 +200,7 @@ app.delete("/song/:id", async (req, res) => {
   }
 
   await deleteSongById(+songId);
-
+  
   res.end();
 });
 
