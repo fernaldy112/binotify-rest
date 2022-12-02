@@ -6,9 +6,10 @@
 
 Web service merupakan aplikasi yang berisi sekumpulan basis data (database) dan perangkat lunak (software) atau bagian dari program perangkat lunak yang diakses secara remote oleh piranti dengan perantara tertentu. Melalui web service, memungkinkan pengguna untuk mengatasi permasalahan berupa interoperability dan mengintegrasikan sistem berbeda.
 
-SOAP (Simple Object Access Protocol) adalah standar untuk bertukar pesan-pesan berbasis XML melalui jaringan komputer atau sebuah jalan untuk program yang berjalan pada suatu sistem operasi (OS) untuk berkomunikasi dengan program pada OS yang sama maupun berbeda dengan menggunakan HTTP dan XML sebagai mekanisme untuk pertukaran data, maka SOAP dapat berkomunikasi dengan berbagai aplikasi meskipun terdapat perbedaan sistem operasi, teknologi, dan bahasa pemrogramannya. 
+REST atau Representational State Transfer adalah salah satu gaya arsitektur yang dapat diadaptasikan ketika membangun web service. Arsitektur ini sangat populer digunakan karena pengembangannya yang relatif mudah. Ia menggunakan pola request-response dalam berinteraksi, artinya ia memanfaatkan protokol HTTP.
+Dalam implementasinya arsitektur REST benar-benar memisahkan peran client dan server, bahkan keduanya tidak harus saling mengetahui. Artinya ketika terjadi perubahan besar di sisi client, tidak akan berdampak pada sisi server, begitu juga sebaliknya.
 
-Pada tugas besar ini, kami menggunakan SOAP untuk menangani Logging dan proses  yang berhubungan dengan subscription dari Binotify App maupun Binotify Premium.
+Pada tugas besar ini, kami menggunakan REST untuk menangani segala proses yang berhubungan dengan artis premium dari Binotify App maupun Binotify Premium.
 
 ## Skema basis data yang digunakan
 ![](scheme/restDB.jpg)
