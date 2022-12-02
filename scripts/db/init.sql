@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Dec 02, 2022 at 12:36 AM
+-- Generation Time: Dec 02, 2022 at 05:18 AM
 -- Server version: 8.0.31
 -- PHP Version: 8.0.19
 
@@ -72,7 +72,7 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`user_id`, `email`, `password`, `username`, `name`, `isAdmin`) VALUES
-(1, 'example@gmail.com', 'e10adc3949ba59abbe56e057f20f883e', 'example', 'exampleName', 0),
+(1, 'admin1@gmail.com', 'e10adc3949ba59abbe56e057f20f883e', 'admin1', 'adminName', 1),
 (2, 'raisa@gmail.com', 'e10adc3949ba59abbe56e057f20f883e', 'raisa_cantik', 'Raisa', 0),
 (4, 'tulus@gmail.com', 'e10adc3949ba59abbe56e057f20f883e', 'tulus_banget', 'TULUS', 0),
 (5, 'agnes@gmail.com', 'e10adc3949ba59abbe56e057f20f883e', 'agnezmo', 'Agnes Monica', 0);

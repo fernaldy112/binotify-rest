@@ -58,7 +58,7 @@ app.use((req, res, next) => {
   );
 
   if (isPublicUrl) {
-    console.log("This url is accessible by anyone");
+    // console.log("This url is accessible by anyone");
     next();
   } else {
     try {
