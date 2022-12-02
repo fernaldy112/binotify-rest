@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Dec 01, 2022 at 03:57 PM
+-- Generation Time: Dec 02, 2022 at 12:36 AM
 -- Server version: 8.0.31
 -- PHP Version: 8.0.19
 
@@ -30,7 +30,7 @@ SET time_zone = "+00:00";
 CREATE TABLE `song` (
   `song_id` bigint UNSIGNED NOT NULL,
   `judul` char(64) NOT NULL,
-  `penyanyi_id` int NOT NULL,
+  `penyanyi_id` bigint UNSIGNED NOT NULL,
   `audio_path` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -87,7 +87,8 @@ INSERT INTO `user` (`user_id`, `email`, `password`, `username`, `name`, `isAdmin
 ALTER TABLE `song`
   ADD PRIMARY KEY (`song_id`),
   ADD UNIQUE KEY `song_id` (`song_id`),
-  ADD UNIQUE KEY `song_id_2` (`song_id`);
+  ADD UNIQUE KEY `song_id_2` (`song_id`),
+  ADD KEY `penyanyi_id` (`penyanyi_id`);
 
 --
 -- Indexes for table `user`
@@ -111,6 +112,16 @@ ALTER TABLE `song`
 --
 ALTER TABLE `user`
   MODIFY `user_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `song`
+--
+ALTER TABLE `song`
+  ADD CONSTRAINT `lagu_penyanyi` FOREIGN KEY (`penyanyi_id`) REFERENCES `user` (`user_id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
