@@ -18,7 +18,7 @@ Pada tugas besar ini, kami menggunakan REST untuk menangani segala proses yang b
 
 Here are the list of contributors by functionalities worked on.
 
-Backend Binotify Premium Autentikasi : 13520112
-Backend Binotify Premium Pengelolaan Lagu Premium : 13520166
-Backend Binotify Premium Endpoint List Penyanyi : 13520063
-Backend Binotify Premium Endpoint List Lagu dari Penyanyi : 13520063
+Backend Binotify Premium Autentikasi : 13520112 <br />
+Backend Binotify Premium Pengelolaan Lagu Premium : 13520166 <br />
+Backend Binotify Premium Endpoint List Penyanyi : 13520063 <br />
+Backend Binotify Premium Endpoint List Lagu dari Penyanyi : 13520063 <br />
